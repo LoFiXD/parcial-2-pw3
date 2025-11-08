@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Calculadora Científica - Funcionando</title>
+<style>
+  body { font-family: 'Segoe UI', Arial; background:#f5f7fa; display:flex;align-items:center;justify-content:center;height:100vh;margin:0; }
+  .calc { width:360px;background:#d9eafc;border:3px solid #1e90ff;border-radius:12px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,0.12); }
+  h1{font-size:18px;color:#1e3d72;margin:0 0 8px;text-align:center}
+  #pantalla{width:100%;height:56px;font-size:26px;padding:10px;border-radius:6px;border:0;background:#f8fbff;text-align:right;box-sizing:border-box;box-shadow:inset 0 2px 6px rgba(0,0,0,0.06)}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  button{padding:12px;font-size:16px;border-radius:8px;border:0;cursor:pointer;background:#f0f0f0}
+  button:active{transform:translateY(1px)}
+  .op{background:#bcd4f6}
+  .spec{background:#1e90ff;color:#fff;font-weight:700}
+  .del{background:#e74c3c;color:#fff;font-weight:700}
+  #msg{min-height:22px;margin-top:10px;text-align:center;font-weight:600;color:#214a76;word-break:break-word}
+  .foot{font-size:12px;text-align:center;color:#1a5276;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="calc" role="application">
+  <h1>Calculadora Científica</h1>
+  <input id="pantalla" aria-label="pantalla" readonly />
+  <div class="grid" id="botones">
+    <!-- fila botones parentesis -->
+    <button data-val="C" class="del">C</button>
+    <button data-val="(">(</button>
+    <button data-val=")">)</button>
+    <button data-val="/" class="op">÷</button>
+    <!-- fila botones 1 -->
+    <button data-val="7">7</button>
+    <button data-val="8">8</button>
+    <button data-val="9">9</button>
+    <button data-val="*" class="op">×</button>
+    <!-- fila botones 2-->
+    <button data-val="4">4</button>
+    <button data-val="5">5</button>
+    <button data-val="6">6</button>
+    <button data-val="-" class="op">−</button>
+    <!-- fila botones 3-->
+    <button data-val="1">1</button>
+    <button data-val="2">2</button>
+    <button data-val="3">3</button>
+    <button data-val="+" class="op">+</button>
+    <!-- fila botones especiales 1 -->
+    <button data-val="0">0</button>
+    <button data-val=".">.</button>
+    <button id="igual" class="spec">=</button>
+    <button id="raiz" class="op">√</button>
+    <!-- fila botones especiales 2 -->
+    <button id="conv" class="op" style="grid-column:span 2">m → cm / km</button>
+    <button id="x2" class="op">x²</button>
+    <button id="x3" class="op">x³</button>
+    <!-- fila botones especiales 3 -->
+    <button id="func" class="op" style="grid-column:span 4">Funciones del Trabajo</button>
+  </div>
+
+  <div id="msg" aria-live="polite"></div>
+  <div class="foot">Hecho por: <b>Sebastian Pérez</b> — Ing. Alonso González</div>
+</div>
+
+<script>
+
+const pantalla = document.getElementById('pantalla');
+const msg = document.getElementById('msg');
+const botones = document.getElementById('botones');
+
+// pantalla vacía
+pantalla.value = "";
+
+// Agregar evento a todos los botones con data-val
+botones.querySelectorAll('button[data-val]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const v = btn.dataset.val;
+    if (v === 'C') { pantalla.value = ""; msg.innerText = ""; return; }
+    pantalla.value += v;
+  });
+});
+
+// Botón "="
+document.getElementById('igual').addEventListener('click', () => {
+  msg.innerText = "";
+  if (!pantalla.value) { msg.innerText = "Ingrese una operación."; return; }
+  // Sustituir símbolos si existieran (por seguridad)
+  const expr = pantalla.value.replace(/÷/g, '/').replace(/×/g, '*');
+  try {
+    // Evalúa la expresión. En un entorno escolar/local está permitido.
+    const resultado = Function('"use strict"; return (' + expr + ')')();
+    if (resultado === undefined) { pantalla.value = "Error"; msg.innerText = "Expresión inválida."; return; }
+    pantalla.value = String(resultado);
+  } catch (e) {
+    pantalla.value = "Error";
+    msg.innerText = "Error en la expresión.";
+    console.error("Error al evaluar:", e);
+  }
+});
+
+// Raíz cuadrada
+document.getElementById('raiz').addEventListener('click', () => {
+  msg.innerText = "";
+  if (!pantalla.value) { msg.innerText = "Ponga un número en pantalla."; return; }
+  const n = parseFloat(pantalla.value);
+  if (isNaN(n) || n < 0) { pantalla.value = "Error"; msg.innerText = "Número inválido para raíz."; return; }
+  pantalla.value = String(Math.sqrt(n));
+});
+
+// Potencias
+document.getElementById('x2').addEventListener('click', () => {
+  msg.innerText = "";
+  if (!pantalla.value) { msg.innerText = "Ponga un número en pantalla."; return; }
+  const n = parseFloat(pantalla.value);
+  if (isNaN(n)) { pantalla.value = "Error"; msg.innerText = "Número inválido."; return; }
+  pantalla.value = String(n ** 2);
+});
+document.getElementById('x3').addEventListener('click', () => {
+  msg.innerText = "";
+  if (!pantalla.value) { msg.innerText = "Ponga un número en pantalla."; return; }
+  const n = parseFloat(pantalla.value);
+  if (isNaN(n)) { pantalla.value = "Error"; msg.innerText = "Número inválido."; return; }
+  pantalla.value = String(n ** 3);
+});
+
+// Conversión metros -> cm / km
+document.getElementById('conv').addEventListener('click', () => {
+  msg.innerText = "";
+  let metros = null;
+  if (pantalla.value.trim() !== "") {
+    const p = parseFloat(pantalla.value);
+    if (!isNaN(p)) metros = p;
+  }
+  if (metros === null) {
+    const entrada = prompt("Ingrese la cantidad en metros:");
+    if (entrada === null) { msg.innerText = "Operación cancelada."; return; }
+    const num = parseFloat(entrada);
+    if (isNaN(num)) { msg.innerText = "Valor inválido."; return; }
+    metros = num;
+  }
+  const cm = metros * 100;
+  const km = metros / 1000;
+  msg.innerText = `${metros} metros equivalen a ${cm} centímetros y ${km} kilómetros.`;
+  // opcional: mostrar km en pantalla para referencia
+  pantalla.value = String(km);
+});
+
+// Funciones del trabajo (menu)
+document.getElementById('func').addEventListener('click', () => {
+  msg.innerText = "";
+  const opcion = prompt(
+`Seleccione:
+1 Suma de tres valores constantes
+2 Cuadrado de un número
+3 Promedio de calificaciones
+4 Conversión de metros
+5 Comparación de dos valores`);
+  if (opcion === null) { msg.innerText = "Operación cancelada."; return; }
+  switch(opcion.trim()) {
+    case '1': {
+  const a = parseFloat(prompt("Ingrese el primer valor:"));
+  const b = parseFloat(prompt("Ingrese el segundo valor:"));
+  const c = parseFloat(prompt("Ingrese el tercer valor:"));
+  
+  if ([a,b,c].some(isNaN)) {
+    msg.innerText = "Debe ingresar tres números válidos.";
+    return;
+  }
+
+  const suma = a + b + c;
+  msg.innerText = `La suma de los valores constantes es: ${suma}`;
+  break;
+}
+
+    case '2': {
+      const n = parseFloat(prompt("Ingrese un número entero:"));
+      if (isNaN(n)) { msg.innerText = "Número inválido."; return; }
+      msg.innerText = `El cuadrado de ${n} es: ${n ** 2}`;
+      break;
+    }
+    case '3': {
+      const nombre = prompt("Nombre del estudiante:");
+      const n1 = parseFloat(prompt("Calificación 1:"));
+      const n2 = parseFloat(prompt("Calificación 2:"));
+      const n3 = parseFloat(prompt("Calificación 3:"));
+      if (!nombre || [n1,n2,n3].some(x => isNaN(x))) { msg.innerText = "Datos incompletos."; return; }
+      const prom = ((n1+n2+n3)/3).toFixed(2);
+      msg.innerText = `El promedio de ${nombre} es: ${prom} puntos.`;
+      break;
+    }
+    case '4': {
+      // reusa la función de conversión
+      document.getElementById('conv').click();
+      break;
+    }
+    case '5': {
+      const v1 = parseFloat(prompt("Primer número:"));
+      const v2 = parseFloat(prompt("Segundo número:"));
+      if (isNaN(v1) || isNaN(v2)) { msg.innerText = "Valores inválidos."; return; }
+      if (v1 === v2) { msg.innerText = "Los números no deben ser iguales."; return; }
+      const mayor = Math.max(v1,v2), menor = Math.min(v1,v2);
+      msg.innerText = `El número mayor es ${mayor}, el menor es ${menor}, y su diferencia es ${Math.abs(v1-v2)}.`;
+      break;
+    }
+    default:
+      msg.innerText = "Opción no válida.";
+  }
+});
+
+/* --- DEBUG: si algo sale mal, mira la consola --- */
+console.log("Calculadora iniciada. Si algo no funciona, abre la consola (Ctrl+Shift+J) y copia el error aquí.");
+</script>
+</body>
+</html>
